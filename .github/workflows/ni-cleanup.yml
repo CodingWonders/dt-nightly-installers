@@ -19,5 +19,6 @@ jobs:
             last_commit_date=$(git log -1 --format="%ci" "$dir")
             if [[ $(date -d "$last_commit_date" +%s) -lt $(date -d "1 week ago" +%s) ]]; then
               echo "$dir"
+              rm -rvf "$dir"
             fi
           done

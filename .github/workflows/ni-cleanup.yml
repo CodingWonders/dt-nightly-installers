@@ -1,0 +1,23 @@
+name: nightly-installer-cleanup
+
+on:
+  push:
+    branches: [ "main" ]
+  pull_request:
+    branches: [ "main" ]
+  workflow_dispatch:
+
+# A workflow run is made up of one or more jobs that can run sequentially or in parallel
+jobs:
+  installer-cleanup:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Grab and delete installers with old enough last commits
+        run: |
+          git ls-tree -d -r HEAD | while read -r mode type object dir; do
+            last_commit_date=$(git log -1 --format="%ci" "$dir")
+            if [[ $(date -d "$last_commit_date" +%s) -lt $(date -d "2 weeks ago" +%s) ]]; then
+              echo "$dir"
+            fi
+          done

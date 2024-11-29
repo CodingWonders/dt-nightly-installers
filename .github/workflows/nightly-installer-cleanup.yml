@@ -34,7 +34,5 @@ jobs:
                 git config --global user.email "101426328+CodingWonders@users.noreply.github.com"
                 git commit -a -m "Nightly Installer Cleanup ($(date +%Y-%m-%d))"
                 git push
-            else
-                echo "$dir is recent. Skipping."
             fi
           done

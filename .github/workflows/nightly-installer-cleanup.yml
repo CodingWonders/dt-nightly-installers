@@ -1,11 +1,9 @@
 name: Clean up Nightly Installers
 
 on:
-  push:
-    branches: [ "main" ]
-  pull_request:
-    branches: [ "main" ]
   workflow_dispatch:
+  schedule:
+    - cron: 0 0 28 * *    # Every month has day 28
 
 jobs:
   nightly-installer-cleanup:

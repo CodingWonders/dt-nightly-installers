@@ -1,0 +1,25 @@
+name: Clean up Nightly Installers
+
+on:
+  push:
+    branches: [ "main" ]
+  pull_request:
+    branches: [ "main" ]
+  workflow_dispatch:
+
+jobs:
+  nightly-installer-cleanup:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Clean up nightly installers
+        run: |
+          git ls-tree -d -r HEAD | while read -r mode type object dir; do
+              # Get the last commit date for each folder
+              last_commit_date=$(git log -1 --format="%ci" "$dir")
+
+              # Compare the date to check if it's older than two weeks
+              if [[ $(date -d "$last_commit_date" +%s) -lt $(date -d "2 weeks ago" +%s) ]]; then
+                  echo "$dir is 2 weeks old or older. Deleting..."
+              fi
+          done

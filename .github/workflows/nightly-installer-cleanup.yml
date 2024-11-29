@@ -15,11 +15,13 @@ jobs:
       - name: Clean up nightly installers
         run: |
           git ls-tree -d -r HEAD | while read -r mode type object dir; do
-              # Get the last commit date for each folder
-              last_commit_date=$(git log -1 --format="%ci" "$dir")
+            # Get the last commit date for each folder in ISO format
+            last_commit_date=$(git log -1 --format="%cd" --date=iso "$dir")
 
-              # Compare the date to check if it's older than two weeks
-              if [[ $(date -d "$last_commit_date" +%s) -lt $(date -d "2 weeks ago" +%s) ]]; then
-                  echo "$dir is 2 weeks old or older. Deleting..."
-              fi
+            # Parse dates in a more portable way
+            if [[ $(date -d "$last_commit_date" +%s 2>/dev/null || true) -lt $(date -d "2 weeks ago" +%s) ]]; then
+                echo "$dir is 2 weeks old or older. Deleting..."
+            else
+                echo "$dir is recent. Skipping."
+            fi
           done

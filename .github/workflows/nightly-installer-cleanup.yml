@@ -32,6 +32,8 @@ jobs:
             if [[ $last_commit_timestamp -lt $two_weeks_ago_timestamp ]]; then
                 echo "$dir is 2 weeks old or older. Deleting..."
                 rm -rf "$dir"
+                git config --global user.name "CodingWonders"
+                git config --global user.email "101426328+CodingWonders@users.noreply.github.com"
                 git commit -a -m "Nightly Installer Cleanup ($(date +%Y-%m-%d))"
                 git push
             else

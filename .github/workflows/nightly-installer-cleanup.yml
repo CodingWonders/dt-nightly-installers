@@ -14,14 +14,26 @@ jobs:
       - uses: actions/checkout@v4
       - name: Clean up nightly installers
         run: |
-          ls -lA
+          # Debug script to handle and log dates for troubleshooting
           git ls-tree -d -r HEAD | while read -r mode type object dir; do
-            # Get the last commit date for each folder in ISO format
-            last_commit_date=$(git log -1 --format="%cd" --date=iso "$dir")
+            echo "Processing directory: $dir"
 
-            # Parse dates in a more portable way
-            if [[ $(date -d "$last_commit_date" +%s 2>/dev/null || true) -lt $(date -d "2 weeks ago" +%s) ]]; then
+            # Get the last commit date in ISO format
+            last_commit_date=$(git log -1 --format="%ci" "$dir" 2>/dev/null || echo "1970-01-01 00:00:00")
+            echo "Last commit date for $dir: $last_commit_date"
+
+            # Convert to Unix timestamps for comparison
+            last_commit_timestamp=$(date -d "$last_commit_date" +%s 2>/dev/null || echo 0)
+            two_weeks_ago_timestamp=$(date -d "2 weeks ago" +%s)
+
+            echo "Last commit timestamp: $last_commit_timestamp"
+            echo "Two weeks ago timestamp: $two_weeks_ago_timestamp"
+
+            # Compare timestamps
+            if [[ $last_commit_timestamp -lt $two_weeks_ago_timestamp ]]; then
                 echo "$dir is 2 weeks old or older. Deleting..."
+                # Uncomment the next line to enable deletion
+                # rm -rf "$dir"
             else
                 echo "$dir is recent. Skipping."
             fi

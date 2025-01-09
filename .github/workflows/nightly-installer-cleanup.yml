@@ -1,0 +1,41 @@
+name: Clean up Nightly Installers
+
+on:
+  workflow_dispatch:
+  schedule:
+    - cron: 0 0 28 * *    # Every month has day 28
+
+jobs:
+  nightly-installer-cleanup:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+      - name: Clean up nightly installers
+        run: |
+          git ls-tree -d -r HEAD | while read -r mode type object dir; do
+            if [[ "$dir" == .git* || "$dir" == .github* ]]; then
+                continue
+            fi
+            # Get the last commit date in ISO format
+            last_commit_date=$(git log -1 --format="%ci" "$dir" 2>/dev/null || echo "1970-01-01 00:00:00")
+            echo "Last commit date for $dir: $last_commit_date"
+
+            # Convert to Unix timestamps for comparison
+            last_commit_timestamp=$(date -d "$last_commit_date" +%s 2>/dev/null || echo 0)
+            two_weeks_ago_timestamp=$(date -d "2 weeks ago" +%s)
+
+            echo "Last commit timestamp: $last_commit_timestamp"
+            echo "Two weeks ago timestamp: $two_weeks_ago_timestamp"
+
+            # Compare timestamps
+            if [[ $last_commit_timestamp -lt $two_weeks_ago_timestamp ]]; then
+                echo "$dir is 2 weeks old or older. Deleting..."
+                rm -rf "$dir"
+                git config --global user.name "CodingWonders"
+                git config --global user.email "101426328+CodingWonders@users.noreply.github.com"
+                git commit -a -m "Nightly Installer Cleanup ($(date +%Y-%m-%d))"
+                git push
+            fi
+          done
